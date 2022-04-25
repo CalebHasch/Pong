@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <script>
+    var ballX = 75, ballY= 75;
+    var ballXSpeed = 6, ballYSpeed = 6;
+    var player1Score = 0;
+    var player2Score = 0;
+    var paddle1Y = 250; 
+    var paddle2Y = 250;
+    var initPaddle2Speed = 4;
+    var paddle2Speed;
+    const paddleLength = 100;
+    const paddleThickness = 10;
+    const maximumScore = 3;
+
+    var canvas;
+    var canvasContext;
+
+    window.onload = function() {
+      canvas = document.getElementById('gameCanvas');
+      canvasContext = canvas.getContext('2d');
+
+      var framesPerSecond = 30;
+      setInterval(function() {
+        moveEverything();
+        drawEverything();
+       }, 1000/framesPerSecond);
+
+       canvas.addEventListener('mousemove', function(evt) {
+         var mousePos = calculateMousePos(evt);
+         paddle1Y = mousePos.y - (paddleLength/2);
+       });
+    }
+
+    function moveEverything() {
+      moveComputerPaddle();
+
+      if(ballX > canvas.width && ballY >= paddle2Y && ballY <= paddle2Y + paddleLength) {
+        ballXSpeed *= -1;
+        ballRedirect(paddle2Y);
+      } else if (ballX > canvas.width) {
+        player1Score += 1;
+        console.log(player1Score + ' - ' + player2Score);
+        ballReset();
+      }
+      if(ballX < 0 && ballY >= paddle1Y && ballY <= paddle1Y + paddleLength) {
+        ballXSpeed *= -1;
+        ballRedirect(paddle1Y);
+      } else if (ballX < 0) {
+        player2Score += 1;
+        console.log(player1Score + ' - ' + player2Score);
+        ballReset();
+      }
+      if(ballY > canvas.height || ballY < 0) {
+        ballYSpeed *= -1;
+      }
+
+      ballX +=ballXSpeed;
+      ballY +=ballYSpeed;
+    }
+
+    function moveComputerPaddle() {
+      var paddle2Center = paddle2Y + paddleLength/2;
+      if (paddle2Center - 35 > ballY) {
+        paddle2Speed = initPaddle2Speed * -1;
+      } else if (paddle2Center + 35 < ballY) {
+        paddle2Speed = initPaddle2Speed;
+      }
+      paddle2Y += paddle2Speed;
+    }
+
+    function ballRedirect(paddlePos) {
+      const paddleCenter = paddlePos + paddleLength/2;
+      ballYSpeed = (ballY - paddleCenter)/5;
+    }
+
+    function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
+      canvasContext.fillStyle = fillColor;
+      canvasContext.fillRect(topLeftX, topLeftY, boxWidth, boxHeight);
+    }
+
+    function colorCircle(xPosition, yPosition, size, fillColor) {
+      canvasContext.fillStyle = fillColor;
+      canvasContext.beginPath();
+      canvasContext.arc(xPosition, yPosition, size, 0, Math.PI*2, true);
+      canvasContext.fill();
+    }
+
+    function drawEverything() {
+      // black background
+      colorRect(0, 0, canvas.width, canvas.height, "black")
+     
+      // blue paddle on left
+      colorRect(0, paddle1Y, paddleThickness, paddleLength, 'blue')
+
+      // green paddle on right 
+      colorRect(canvas.width - paddleThickness, paddle2Y, paddleThickness, paddleLength, "green")
+
+      // red ball
+      colorCircle(ballX, ballY, 10, 'red');
+
+      // draw net
+      for(i=0; i < canvas.height; i+=40) {
+        colorRect(canvas.width/2, i, 2, 20, 'white');
+      }
+    }
+
+    function ballReset() {
+      ballXSpeed *= -1;
+      ballYSpeed *= -1;
+      ballX = canvas.width/2;
+      ballY = canvas.height/2;
+
+      if(player1Score === maximumScore || player2Score === maximumScore) {
+        player1Score = 0;
+        player2Score = 0;
+      }
+    }
+
+    function calculateMousePos(evt) {
+      var rect = canvas.getBoundingClientRect(), root = document.documentElement;
+
+      // margins, canvas position, scroll amount, etc.
+      var mouseX = evt.clientX - rect.left - root.scrollLeft;
+      var mouseY = evt.clientY - rect.top - root.scrollTop;
+      return {
+        x: mouseX,
+        y: mouseY
+      };
+    }
+  </script>
+  
+</body>
+</html>
