@@ -15,8 +15,12 @@
     var player2Score = 0;
     var paddle1Y = 250; 
     var paddle2Y = 250;
-    var initPaddle2Speed = 4;
-    var paddle2Speed;
+    var paddle1X = 350;
+    var paddle2X = 350;
+    var initpadd2YSpeed = 4;
+    var initpadd2XSpeed = 6;
+    var padd2YSpeed;
+    var padd2XSpeed;
     const paddleLength = 100;
     const paddleThickness = 10;
     const maximumScore = 3;
@@ -37,15 +41,17 @@
        canvas.addEventListener('mousemove', function(evt) {
          var mousePos = calculateMousePos(evt);
          paddle1Y = mousePos.y - (paddleLength/2);
+         paddle1X = mousePos.x - paddleLength/2;
        });
     }
 
     function moveEverything() {
-      moveComputerPaddle();
+      moveComputerPaddleY();
+      moveComputerPaddleX();
 
       if(ballX > canvas.width && ballY >= paddle2Y && ballY <= paddle2Y + paddleLength) {
         ballXSpeed *= -1;
-        ballRedirect(paddle2Y);
+        ballRedirectY(paddle2Y);
       } else if (ballX > canvas.width) {
         player1Score += 1;
         console.log(player1Score + ' - ' + player2Score);
@@ -53,34 +59,61 @@
       }
       if(ballX < 0 && ballY >= paddle1Y && ballY <= paddle1Y + paddleLength) {
         ballXSpeed *= -1;
-        ballRedirect(paddle1Y);
+        ballRedirectY(paddle2Y);
       } else if (ballX < 0) {
         player2Score += 1;
         console.log(player1Score + ' - ' + player2Score);
         ballReset();
       }
-      if(ballY > canvas.height || ballY < 0) {
+      if(ballY >= canvas.height - paddleThickness && ballY <= canvas.height && ballX >= paddle1X && ballX <= (paddle1X + paddleLength) && ballYSpeed === Math.abs(ballYSpeed)) {
         ballYSpeed *= -1;
+        ballRedirectX(paddle1X);
+      } else if (ballY > canvas.height) {
+        player2Score += 1;
+        ballReset();
       }
+      if(ballY >= 0 && ballY <= paddleThickness && ballX >= paddle2X && ballX <= (paddle2X + paddleLength) && ballYSpeed !== Math.abs(ballYSpeed)) {
+        ballYSpeed *= -1;
+        ballRedirectX(paddle2X);
+      } else if(ballY < 0) {
+        player1Score += 1;
+        ballReset();
+      }
+      
 
       ballX +=ballXSpeed;
       ballY +=ballYSpeed;
     }
 
-    function moveComputerPaddle() {
+    function moveComputerPaddleY() {
       var paddle2Center = paddle2Y + paddleLength/2;
       if (paddle2Center - 35 > ballY) {
-        paddle2Speed = initPaddle2Speed * -1;
+        padd2YSpeed = initpadd2YSpeed * -1;
       } else if (paddle2Center + 35 < ballY) {
-        paddle2Speed = initPaddle2Speed;
+        padd2YSpeed = initpadd2YSpeed;
       }
-      paddle2Y += paddle2Speed;
+      paddle2Y += padd2YSpeed;
     }
 
-    function ballRedirect(paddlePos) {
+    function moveComputerPaddleX() {
+      var paddle2Center = paddle2X + paddleLength/2;
+      if (paddle2Center - 35 > ballX) {
+        padd2XSpeed = initpadd2XSpeed * -1;
+      } else if (paddle2Center + 35 < ballX) {
+        padd2XSpeed = initpadd2XSpeed;
+      }
+      paddle2X += padd2XSpeed;
+    }
+
+    function ballRedirectY(paddlePos, ballSpeed, ballP) {
       const paddleCenter = paddlePos + paddleLength/2;
       ballYSpeed = (ballY - paddleCenter)/5;
     }
+
+    function ballRedirectX(paddlePos) {
+      const paddleCenter = paddlePos + paddleLength/2;
+      ballXSpeed = (ballX - paddleCenter)/5;
+    }    
 
     function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
       canvasContext.fillStyle = fillColor;
@@ -96,13 +129,19 @@
 
     function drawEverything() {
       // black background
-      colorRect(0, 0, canvas.width, canvas.height, "black")
+      colorRect(0, 0, canvas.width, canvas.height, "black");
      
       // blue paddle on left
-      colorRect(0, paddle1Y, paddleThickness, paddleLength, 'blue')
+      colorRect(0, paddle1Y, paddleThickness, paddleLength, 'blue');
+
+      // blue bottom paddle
+      colorRect(paddle1X, canvas.height - paddleThickness, paddleLength, paddleThickness, 'blue');
 
       // green paddle on right 
-      colorRect(canvas.width - paddleThickness, paddle2Y, paddleThickness, paddleLength, "green")
+      colorRect(canvas.width - paddleThickness, paddle2Y, paddleThickness, paddleLength, "green");
+
+      // green top paddle
+      colorRect(paddle2X, 0, paddleLength, paddleThickness, 'green');
 
       // red ball
       colorCircle(ballX, ballY, 10, 'red');
