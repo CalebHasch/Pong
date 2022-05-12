@@ -7,7 +7,8 @@
   <title>Document</title>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <h1>Score: 0 - 0</h1>
+  <canvas id="gameCanvas" width="600" height="600"></canvas>
   <script>
     var ballX = 75, ballY= 75;
     var ballXSpeed = 6, ballYSpeed = 6;
@@ -21,21 +22,37 @@
     var initpadd2XSpeed = 6;
     var padd2YSpeed;
     var padd2XSpeed;
+    var showingWinScreen = true;
     const paddleLength = 100;
     const paddleThickness = 10;
     const maximumScore = 3;
 
+    var score;
     var canvas;
     var canvasContext;
 
     window.onload = function() {
       canvas = document.getElementById('gameCanvas');
       canvasContext = canvas.getContext('2d');
+      score = document.querySelector("h1");
 
       var framesPerSecond = 30;
       setInterval(function() {
+        if(showingWinScreen) {
+          // black background
+          colorRect(0, 0, canvas.width, canvas.height, "black");
+
+          score.innerText = 'Winner: ' + player1Score + ' - ' + player2Score;
+          
+          canvas.addEventListener('click', function(evt) {
+            showingWinScreen = false;
+            player1Score = 0;
+            player2Score = 0;
+          }, false);
+      } else {
         moveEverything();
         drawEverything();
+      }
        }, 1000/framesPerSecond);
 
        canvas.addEventListener('mousemove', function(evt) {
@@ -128,9 +145,11 @@
     }
 
     function drawEverything() {
+      canvasContext.textAlign = 'center';
+
       // black background
       colorRect(0, 0, canvas.width, canvas.height, "black");
-     
+    
       // blue paddle on left
       colorRect(0, paddle1Y, paddleThickness, paddleLength, 'blue');
 
@@ -150,6 +169,10 @@
       for(i=0; i < canvas.height; i+=40) {
         colorRect(canvas.width/2, i, 2, 20, 'white');
       }
+
+      // score
+      score.innerText = "Score: " + player1Score + '-' + player2Score;
+      canvasContext.innerText = "My message"
     }
 
     function ballReset() {
@@ -159,8 +182,7 @@
       ballY = canvas.height/2;
 
       if(player1Score === maximumScore || player2Score === maximumScore) {
-        player1Score = 0;
-        player2Score = 0;
+        showingWinScreen = true;
       }
     }
 
